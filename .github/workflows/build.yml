@@ -7,38 +7,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: mingc/android-build-box:latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up JDK
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Setup Android SDK
-        run: |
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdtools.zip
-          mkdir -p $HOME/android/cmdline-tools
-          unzip cmdtools.zip -d $HOME/android/cmdline-tools
-          mv $HOME/android/cmdline-tools/cmdline-tools $HOME/android/cmdline-tools/latest
-          export ANDROID_HOME=$HOME/android
-          export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
-          yes | sdkmanager --licenses
-          sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.2"
-
-      - name: Create gradlew
-        run: |
-          cat > gradlew << 'EOF'
-          #!/bin/sh
-          exec gradle "$@"
-          EOF
-          chmod +x gradlew
-
       - name: Build APK
         run: |
-          export ANDROID_HOME=$HOME/android
-          export PATH=$PATH:$ANDROID_HOME/platform-tools
+          gradle wrapper
           ./gradlew assembleDebug
 
       - name: Upload APK
