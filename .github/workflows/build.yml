@@ -7,18 +7,27 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: mingc/android-build-box:latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build APK
-        run: |
-          gradle wrapper
-          ./gradlew assembleDebug
-
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
         with:
-          name: resolution-changer
-          path: app/build/outputs/apk/debug/app-debug.apk
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Install Gradle
+        run: |
+          wget https://services.gradle.org/distributions/gradle-8.0-bin.zip -O gradle.zip
+          unzip gradle.zip -d /opt
+          export PATH=$PATH:/opt/gradle-8.0/bin
+          echo "/opt/gradle-8.0/bin" >> $GITHUB_PATH
+
+      - name: Setup Android SDK
+        run: |
+          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdtools.zip
+          mkdir -p $HOME/android/cmdline-tools
+          unzip cmdtools.zip -d $HOME/android/cmdline-tools
+          mv $HOME/android/cmdline-tools/cmdline-tools $HOME/android/cmdline-tools/latest
+          echo "ANDROID_HOME=$HOME/android" >> $GITHUB_ENV
+          echo "$HOME/android/cmdline-tools/latest/bin" >> $GITHUB_PATH
