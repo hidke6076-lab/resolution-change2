@@ -16,18 +16,20 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Install Gradle
-        run: |
-          wget https://services.gradle.org/distributions/gradle-8.0-bin.zip -O gradle.zip
-          unzip gradle.zip -d /opt
-          export PATH=$PATH:/opt/gradle-8.0/bin
-          echo "/opt/gradle-8.0/bin" >> $GITHUB_PATH
-
       - name: Setup Android SDK
-        run: |
-          wget https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O cmdtools.zip
-          mkdir -p $HOME/android/cmdline-tools
-          unzip cmdtools.zip -d $HOME/android/cmdline-tools
-          mv $HOME/android/cmdline-tools/cmdline-tools $HOME/android/cmdline-tools/latest
-          echo "ANDROID_HOME=$HOME/android" >> $GITHUB_ENV
-          echo "$HOME/android/cmdline-tools/latest/bin" >> $GITHUB_PATH
+        uses: android-actions/setup-android@v3
+
+      - name: Accept licenses
+        run: yes | sdkmanager --licenses || true
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/*.apk
