@@ -18,42 +18,12 @@ jobs:
           
       - name: Setup Android SDK
         uses: android-actions/setup-android@v2
-        
-      - name: Create project files
+
+      - name: Make gradlew
         run: |
-          mkdir -p app/src/main/java/com/resolutionchanger
-          
-          cat > settings.gradle << 'EOF'
-          rootProject.name = "ResolutionChanger"
-          include ':app'
-          EOF
-          
-          cat > build.gradle << 'EOF'
-          buildscript {
-              repositories { google(); mavenCentral() }
-              dependencies { classpath 'com.android.tools.build:gradle:8.0.2' }
-          }
-          allprojects {
-              repositories { google(); mavenCentral() }
-          }
-          EOF
-          
-          cat > app/build.gradle << 'EOF'
-          plugins { id 'com.android.application' }
-          android {
-              compileSdk 33
-              defaultConfig {
-                  applicationId "com.resolutionchanger"
-                  minSdk 21
-                  targetSdk 33
-                  versionCode 1
-                  versionName "1.0"
-              }
-          }
-          dependencies {
-              implementation 'androidx.appcompat:appcompat:1.6.1'
-          }
-          EOF
+          wget https://services.gradle.org/distributions/gradle-8.0-bin.zip -P /tmp
+          unzip /tmp/gradle-8.0-bin.zip -d /opt
+          /opt/gradle-8.0/bin/gradle wrapper
 
       - name: Build APK
         run: ./gradlew assembleDebug
